@@ -51,9 +51,16 @@ class Providers_api_v1 extends EA_Controller
 
             $with = $this->api->request_with();
 
-            $providers = empty($keyword)
-                ? $this->providers_model->get(null, $limit, $offset, $order_by)
-                : $this->providers_model->search($keyword, $limit, $offset, $order_by);
+            // Branch filter.
+            $branch_id = request('branchId');
+
+            if (!empty($branch_id) && empty($keyword)) {
+                $providers = $this->providers_model->get_by_branch((int) $branch_id, $limit, $offset, $order_by);
+            } else {
+                $providers = empty($keyword)
+                    ? $this->providers_model->get(null, $limit, $offset, $order_by)
+                    : $this->providers_model->search($keyword, $limit, $offset, $order_by);
+            }
 
             foreach ($providers as &$provider) {
                 $this->providers_model->api_encode($provider);

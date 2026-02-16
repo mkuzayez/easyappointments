@@ -27,6 +27,7 @@ class Appointments_model extends EA_Model
         'id_users_provider' => 'integer',
         'id_users_customer' => 'integer',
         'id_services' => 'integer',
+        'payment_amount' => 'float',
     ];
 
     /**
@@ -47,6 +48,12 @@ class Appointments_model extends EA_Model
         'customerId' => 'id_users_customer',
         'googleCalendarId' => 'id_google_calendar',
         'caldavCalendarId' => 'id_caldav_calendar',
+        'paymentStatus' => 'payment_status',
+        'paymentMethod' => 'payment_method',
+        'stripeSessionId' => 'stripe_session_id',
+        'stripePaymentIntentId' => 'stripe_payment_intent_id',
+        'paymentAmount' => 'payment_amount',
+        'paymentCurrency' => 'payment_currency',
     ];
 
     /**
@@ -575,6 +582,14 @@ class Appointments_model extends EA_Model
                 $appointment['id_google_calendar'] !== null ? $appointment['id_google_calendar'] : null,
             'caldavCalendarId' =>
                 $appointment['id_caldav_calendar'] !== null ? $appointment['id_caldav_calendar'] : null,
+            'paymentStatus' => $appointment['payment_status'] ?? null,
+            'paymentMethod' => $appointment['payment_method'] ?? null,
+            'stripeSessionId' => $appointment['stripe_session_id'] ?? null,
+            'stripePaymentIntentId' => $appointment['stripe_payment_intent_id'] ?? null,
+            'paymentAmount' => array_key_exists('payment_amount', $appointment) && $appointment['payment_amount'] !== null
+                ? (float) $appointment['payment_amount']
+                : null,
+            'paymentCurrency' => $appointment['payment_currency'] ?? null,
         ];
 
         $appointment = $encoded_resource;
@@ -640,6 +655,30 @@ class Appointments_model extends EA_Model
 
         if (array_key_exists('caldavCalendarId', $appointment)) {
             $decoded_request['id_caldav_calendar'] = $appointment['caldavCalendarId'];
+        }
+
+        if (array_key_exists('paymentStatus', $appointment)) {
+            $decoded_request['payment_status'] = $appointment['paymentStatus'];
+        }
+
+        if (array_key_exists('paymentMethod', $appointment)) {
+            $decoded_request['payment_method'] = $appointment['paymentMethod'];
+        }
+
+        if (array_key_exists('stripeSessionId', $appointment)) {
+            $decoded_request['stripe_session_id'] = $appointment['stripeSessionId'];
+        }
+
+        if (array_key_exists('stripePaymentIntentId', $appointment)) {
+            $decoded_request['stripe_payment_intent_id'] = $appointment['stripePaymentIntentId'];
+        }
+
+        if (array_key_exists('paymentAmount', $appointment)) {
+            $decoded_request['payment_amount'] = $appointment['paymentAmount'];
+        }
+
+        if (array_key_exists('paymentCurrency', $appointment)) {
+            $decoded_request['payment_currency'] = $appointment['paymentCurrency'];
         }
 
         $decoded_request['is_unavailability'] = false;

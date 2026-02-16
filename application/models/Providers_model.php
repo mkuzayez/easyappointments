@@ -969,6 +969,127 @@ class Providers_model extends EA_Model
     }
 
     /**
+     * Get the branches assigned to a provider.
+     *
+     * @param int $provider_id Provider ID.
+     *
+     * @return array Returns an array of branch records.
+     */
+    public function get_branches(int $provider_id): array
+    {
+        return $this->db
+            ->select('branches.*')
+            ->from('provider_branches')
+            ->join('branches', 'branches.id = provider_branches.id_branches')
+            ->where('provider_branches.id_users_provider', $provider_id)
+            ->where('branches.is_active', 1)
+            ->get()
+            ->result_array();
+    }
+
+    /**
+     * Assign a branch to a provider.
+     *
+     * @param int $provider_id Provider ID.
+     * @param int $branch_id Branch ID.
+     */
+    public function add_branch(int $provider_id, int $branch_id): void
+    {
+        // Check if assignment already exists.
+        $count = $this->db
+            ->get_where('provider_branches', [
+                'id_users_provider' => $provider_id,
+                'id_branches' => $branch_id,
+            ])
+            ->num_rows();
+
+        if (!$count) {
+            $this->db->insert('provider_branches', [
+                'id_users_provider' => $provider_id,
+                'id_branches' => $branch_id,
+            ]);
+        }
+    }
+
+    /**
+     * Remove a branch assignment from a provider.
+     *
+     * @param int $provider_id Provider ID.
+     * @param int $branch_id Branch ID.
+     */
+    public function remove_branch(int $provider_id, int $branch_id): void
+    {
+        $this->db->delete('provider_branches', [
+            'id_users_provider' => $provider_id,
+            'id_branches' => $branch_id,
+        ]);
+    }
+
+    /**
+     * Get the branch IDs assigned to a provider.
+     *
+     * @param int $provider_id Provider ID.
+     *
+     * @return array Returns an array of branch IDs.
+     */
+    public function get_branch_ids(int $provider_id): array
+    {
+        $connections = $this->db
+            ->get_where('provider_branches', ['id_users_provider' => $provider_id])
+            ->result_array();
+
+        $branch_ids = [];
+
+        foreach ($connections as $connection) {
+            $branch_ids[] = (int) $connection['id_branches'];
+        }
+
+        return $branch_ids;
+    }
+
+    /**
+     * Get providers filtered by branch ID.
+     *
+     * @param int $branch_id Branch ID.
+     * @param int|null $limit Record limit.
+     * @param int|null $offset Record offset.
+     * @param string|null $order_by Order by.
+     *
+     * @return array Returns an array of providers.
+     */
+    public function get_by_branch(
+        int $branch_id,
+        ?int $limit = null,
+        ?int $offset = null,
+        ?string $order_by = null,
+    ): array {
+        $role_id = $this->get_provider_role_id();
+
+        if ($order_by !== null) {
+            $this->db->order_by($this->quote_order_by($order_by));
+        }
+
+        $providers = $this->db
+            ->select('users.*')
+            ->from('users')
+            ->join('provider_branches', 'provider_branches.id_users_provider = users.id', 'inner')
+            ->where('users.id_roles', $role_id)
+            ->where('provider_branches.id_branches', $branch_id)
+            ->limit($limit)
+            ->offset($offset)
+            ->get()
+            ->result_array();
+
+        foreach ($providers as &$provider) {
+            $this->cast($provider);
+            $provider['settings'] = $this->get_settings($provider['id']);
+            $provider['services'] = $this->get_service_ids($provider['id']);
+        }
+
+        return $providers;
+    }
+
+    /**
      * Quickly check if a service is assigned to a provider.
      *
      * @param int $provider_id

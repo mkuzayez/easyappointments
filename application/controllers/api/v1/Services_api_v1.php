@@ -51,8 +51,17 @@ class Services_api_v1 extends EA_Controller
 
             $with = $this->api->request_with();
 
+            $where = null;
+
+            // Branch filter.
+            $branch_id = request('branchId');
+
+            if (!empty($branch_id)) {
+                $where['id_branches'] = $branch_id;
+            }
+
             $services = empty($keyword)
-                ? $this->services_model->get(null, $limit, $offset, $order_by)
+                ? $this->services_model->get($where, $limit, $offset, $order_by)
                 : $this->services_model->search($keyword, $limit, $offset, $order_by);
 
             foreach ($services as &$service) {

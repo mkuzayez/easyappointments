@@ -29,6 +29,7 @@ class Services_model extends EA_Model
         'attendants_number' => 'integer',
         'is_private' => 'boolean',
         'id_service_categories' => 'integer',
+        'id_branches' => 'integer',
     ];
 
     /**
@@ -47,6 +48,7 @@ class Services_model extends EA_Model
         'attendantsNumber' => 'attendants_number',
         'isPrivate' => 'is_private',
         'serviceCategoryId' => 'id_service_categories',
+        'branchId' => 'id_branches',
     ];
 
     /**
@@ -420,6 +422,9 @@ class Services_model extends EA_Model
             'isPrivate' => (bool) $service['is_private'],
             'serviceCategoryId' =>
                 $service['id_service_categories'] !== null ? (int) $service['id_service_categories'] : null,
+            'branchId' => array_key_exists('id_branches', $service) && $service['id_branches'] !== null
+                ? (int) $service['id_branches']
+                : null,
         ];
 
         $service = $encoded_resource;
@@ -477,6 +482,10 @@ class Services_model extends EA_Model
 
         if (array_key_exists('isPrivate', $service)) {
             $decoded_resource['is_private'] = (bool) $service['isPrivate'];
+        }
+
+        if (array_key_exists('branchId', $service)) {
+            $decoded_resource['id_branches'] = $service['branchId'];
         }
 
         $service = $decoded_resource;
