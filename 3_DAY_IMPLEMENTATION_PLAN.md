@@ -1095,13 +1095,13 @@ curl -X POST http://localhost/api/v1/appointments \
 
 ### Day 2 Testing Checklist
 
-- [ ] Stripe SDK installed
-- [ ] Checkout session created successfully
-- [ ] Payment verification working
-- [ ] Appointments created with payment data
-- [ ] Payment status saved correctly
-- [ ] Offline payment option works
-- [ ] Test cards work in Stripe checkout
+- [x] Stripe SDK installed
+- [x] Checkout session created successfully
+- [x] Payment verification working
+- [x] Appointments created with payment data
+- [x] Payment status saved correctly
+- [x] Offline payment option works
+- [x] Test cards work in Stripe checkout
 
 ---
 

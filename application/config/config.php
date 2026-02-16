@@ -475,5 +475,19 @@ $config['proxy_ips'] = '';
 */
 $config['rate_limiting'] = TRUE;
 
+/*
+|--------------------------------------------------------------------------
+| Stripe Settings
+|--------------------------------------------------------------------------
+|
+| Configure the Stripe payment gateway credentials and URLs. Use environment
+| variables to keep keys out of source control.
+|
+*/
+$config['stripe_secret_key'] = getenv('STRIPE_SECRET_KEY') ?: '';
+$config['stripe_publishable_key'] = getenv('STRIPE_PUBLISHABLE_KEY') ?: '';
+$config['stripe_success_url'] = getenv('STRIPE_SUCCESS_URL') ?: 'https://expertmedical.ae/booking/success';
+$config['stripe_cancel_url'] = getenv('STRIPE_CANCEL_URL') ?: 'https://expertmedical.ae/booking/cancel';
+
 /* End of file config.php */
 /* Location: ./application/config/config.php */

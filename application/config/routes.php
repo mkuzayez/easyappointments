@@ -157,6 +157,10 @@ $route['api/v1/settings/(:any)']['put'] = 'api/v1/settings_api_v1/update/$1';
 
 $route['api/v1/availabilities']['get'] = 'api/v1/availabilities_api_v1/get';
 
+$route['api/v1/payments/create-session']['post'] = 'api/v1/payments_api_v1/create_session';
+
+$route['api/v1/payments/verify']['post'] = 'api/v1/payments_api_v1/verify';
+
 /*
 | -------------------------------------------------------------------------
 | CUSTOM ROUTING

@@ -22,7 +22,9 @@ tags:
   - name: appointments
   - name: availabilities
   - name: blocked_periods
+  - name: branches
   - name: customers
+  - name: payments
   - name: providers
   - name: secretaries
   - name: service_categories
@@ -648,6 +650,11 @@ paths:
           in: query
           schema:
             type: string
+        - name: branchId
+          in: query
+          description: Filter services by branch
+          schema:
+            type: integer
       responses:
         '200':
           description: OK
@@ -1167,6 +1174,11 @@ paths:
           in: query
           schema:
             type: string
+        - name: branchId
+          in: query
+          description: Filter providers by branch
+          schema:
+            type: integer
       responses:
         '200':
           description: OK
@@ -1942,6 +1954,248 @@ paths:
       security:
         - BearerToken: [ ]
         - BasicAuth: [ ]
+  /branches:
+    get:
+      tags:
+        - branches
+      summary: Get all branches
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: length
+          in: query
+          schema:
+            type: integer
+        - name: sort
+          in: query
+          schema:
+            type: string
+        - name: q
+          in: query
+          schema:
+            type: string
+        - name: fields
+          in: query
+          schema:
+            type: string
+        - name: isActive
+          in: query
+          description: Filter by active status
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BranchRecord'
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - BearerToken: [ ]
+        - BasicAuth: [ ]
+    post:
+      tags:
+        - branches
+      summary: Create a branch
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BranchPayload'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BranchRecord'
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      x-codegen-request-body-name: body
+      security:
+        - BearerToken: [ ]
+        - BasicAuth: [ ]
+  /branches/{branchId}:
+    get:
+      tags:
+        - branches
+      summary: Get a branch
+      parameters:
+        - name: branchId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BranchRecord'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - BearerToken: [ ]
+        - BasicAuth: [ ]
+    put:
+      tags:
+        - branches
+      summary: Update a branch
+      parameters:
+        - name: branchId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BranchPayload'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BranchRecord'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      x-codegen-request-body-name: body
+      security:
+        - BearerToken: [ ]
+        - BasicAuth: [ ]
+    delete:
+      tags:
+        - branches
+      summary: Delete a branch
+      parameters:
+        - name: branchId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - BearerToken: [ ]
+        - BasicAuth: [ ]
+  /payments/create-session:
+    post:
+      tags:
+        - payments
+      summary: Create a Stripe checkout session
+      description: Creates a Stripe checkout session and returns the checkout URL for payment.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentSessionPayload'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentSessionResponse'
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - BearerToken: [ ]
+        - BasicAuth: [ ]
+  /payments/verify:
+    post:
+      tags:
+        - payments
+      summary: Verify a payment
+      description: Verifies the payment status of a Stripe checkout session.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - sessionId
+              properties:
+                sessionId:
+                  type: string
+                  description: Stripe checkout session ID
+              example:
+                sessionId: cs_test_abc123
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentVerifyResponse'
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - BearerToken: [ ]
+        - BasicAuth: [ ]
 components:
   schemas:
     Availabilities:
@@ -1979,6 +2233,25 @@ components:
           type: string
         caldavCalendarId:
           type: string
+        paymentStatus:
+          type: string
+          description: Payment status (pending, paid)
+        paymentMethod:
+          type: string
+          description: Payment method (online, offline)
+        stripeSessionId:
+          type: string
+          description: Stripe checkout session ID
+        stripePaymentIntentId:
+          type: string
+          description: Stripe payment intent ID
+        paymentAmount:
+          type: number
+          format: float
+          description: Payment amount
+        paymentCurrency:
+          type: string
+          description: Payment currency (e.g. AED, USD)
       example:
         id: 1
         book: '2021-01-01 12:00:00'
@@ -1994,6 +2267,12 @@ components:
         serviceId: 6
         googleCalendarId: null
         caldavCalendarId: null
+        paymentStatus: paid
+        paymentMethod: online
+        stripeSessionId: cs_test_abc123
+        stripePaymentIntentId: pi_abc123
+        paymentAmount: 250.00
+        paymentCurrency: AED
     AppointmentPayload:
       type: object
       properties:
@@ -2015,6 +2294,15 @@ components:
           type: integer
         serviceId:
           type: integer
+        stripeSessionId:
+          type: string
+          description: Stripe checkout session ID (for online payment verification)
+        paymentMethod:
+          type: string
+          description: Payment method - "offline" for pay-at-clinic
+          enum:
+            - online
+            - offline
       example:
         start: '2021-01-01 17:00:00'
         end: '2021-01-01 18:00:00'
@@ -2025,6 +2313,7 @@ components:
         customerId: 5
         providerId: 2
         serviceId: 6
+        stripeSessionId: cs_test_abc123
     UnavailabilityRecord:
       type: object
       properties:
@@ -2209,6 +2498,9 @@ components:
           type: boolean
         categoryId:
           type: integer
+        branchId:
+          type: integer
+          description: Branch ID the service belongs to
       example:
         id: 1
         name: Test Service
@@ -2221,6 +2513,7 @@ components:
         attendantsNumber: 1
         isPrivate: false
         serviceCategoryId: null
+        branchId: 1
     ServicePayload:
       type: object
       properties:
@@ -2857,6 +3150,134 @@ components:
         start: '2021-01-01 17:00:00'
         end: '2021-01-01 18:00:00'
         notes: This is a test blocked peroid.
+    BranchRecord:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        nameAr:
+          type: string
+          description: Arabic name
+        address:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        city:
+          type: string
+        isActive:
+          type: boolean
+      example:
+        id: 1
+        name: Dubai Branch
+        nameAr: فرع دبي
+        address: null
+        phone: null
+        email: null
+        city: Dubai
+        isActive: true
+    BranchPayload:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        nameAr:
+          type: string
+        address:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        city:
+          type: string
+        isActive:
+          type: boolean
+      example:
+        name: Dubai Branch
+        nameAr: فرع دبي
+        city: Dubai
+        isActive: true
+    PaymentSessionPayload:
+      type: object
+      required:
+        - amount
+        - customerEmail
+      properties:
+        amount:
+          type: number
+          format: float
+          description: Payment amount
+        currency:
+          type: string
+          description: Currency code (default AED)
+          default: AED
+        customerEmail:
+          type: string
+          description: Customer email for the checkout session
+        metadata:
+          type: object
+          description: Optional metadata (e.g. serviceId, providerId)
+        successUrl:
+          type: string
+          description: URL to redirect after successful payment
+        cancelUrl:
+          type: string
+          description: URL to redirect after cancelled payment
+      example:
+        amount: 250.00
+        currency: AED
+        customerEmail: patient@example.com
+        metadata:
+          serviceId: 1
+          providerId: 1
+          service_name: General Checkup
+    PaymentSessionResponse:
+      type: object
+      properties:
+        sessionId:
+          type: string
+          description: Stripe checkout session ID
+        checkoutUrl:
+          type: string
+          description: URL to redirect the user to for payment
+        expiresAt:
+          type: string
+          format: date-time
+          description: Session expiration time
+      example:
+        sessionId: cs_test_abc123
+        checkoutUrl: https://checkout.stripe.com/c/pay/cs_test_abc123
+        expiresAt: '2026-02-17T12:00:00+00:00'
+    PaymentVerifyResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Payment status (paid or pending)
+          enum:
+            - paid
+            - pending
+        paymentIntentId:
+          type: string
+          description: Stripe payment intent ID (only when paid)
+        amountTotal:
+          type: number
+          format: float
+          description: Total amount paid (only when paid)
+        currency:
+          type: string
+          description: Currency code (only when paid)
+      example:
+        status: paid
+        paymentIntentId: pi_abc123
+        amountTotal: 250.00
+        currency: AED
     ErrorResponse:
       type: object
       properties:

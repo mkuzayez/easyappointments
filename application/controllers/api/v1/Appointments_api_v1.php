@@ -220,6 +220,30 @@ class Appointments_api_v1 extends EA_Controller
                 $appointment['end_datetime'] = $this->appointments_model->calculate_end_datetime($appointment);
             }
 
+            // Handle payment verification if online payment.
+            if (!empty($appointment['stripe_session_id'])) {
+                $this->load->library('stripe_payment');
+
+                $is_paid = $this->stripe_payment->verify_payment($appointment['stripe_session_id']);
+
+                if (!$is_paid) {
+                    throw new RuntimeException('Payment not verified. Please complete payment first.');
+                }
+
+                $session = $this->stripe_payment->get_session($appointment['stripe_session_id']);
+
+                $appointment['payment_status'] = 'paid';
+                $appointment['payment_method'] = 'online';
+                $appointment['stripe_payment_intent_id'] = $session->payment_intent;
+                $appointment['payment_amount'] = $session->amount_total / 100;
+                $appointment['payment_currency'] = strtoupper($session->currency);
+            } elseif (
+                !empty($appointment['payment_method']) &&
+                $appointment['payment_method'] === 'offline'
+            ) {
+                $appointment['payment_status'] = 'pending';
+            }
+
             $appointment_id = $this->appointments_model->save($appointment);
 
             $created_appointment = $this->appointments_model->find($appointment_id);
