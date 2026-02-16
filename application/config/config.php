@@ -484,10 +484,10 @@ $config['rate_limiting'] = TRUE;
 | variables to keep keys out of source control.
 |
 */
-$config['stripe_secret_key'] = getenv('STRIPE_SECRET_KEY') ?: '';
-$config['stripe_publishable_key'] = getenv('STRIPE_PUBLISHABLE_KEY') ?: '';
-$config['stripe_success_url'] = getenv('STRIPE_SUCCESS_URL') ?: 'https://expertmedical.ae/booking/success';
-$config['stripe_cancel_url'] = getenv('STRIPE_CANCEL_URL') ?: 'https://expertmedical.ae/booking/cancel';
+$config['stripe_secret_key'] = Config::STRIPE_SECRET_KEY;
+$config['stripe_publishable_key'] = Config::STRIPE_PUBLISHABLE_KEY;
+$config['stripe_success_url'] = Config::STRIPE_SUCCESS_URL;
+$config['stripe_cancel_url'] = Config::STRIPE_CANCEL_URL;
 
 /* End of file config.php */
 /* Location: ./application/config/config.php */

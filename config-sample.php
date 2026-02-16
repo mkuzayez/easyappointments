@@ -50,4 +50,13 @@ class Config
     const GOOGLE_SYNC_FEATURE = false; // Enter TRUE or FALSE
     const GOOGLE_CLIENT_ID = '';
     const GOOGLE_CLIENT_SECRET = '';
+
+    // ------------------------------------------------------------------------
+    // STRIPE PAYMENT SETTINGS
+    // ------------------------------------------------------------------------
+
+    const STRIPE_SECRET_KEY = '';
+    const STRIPE_PUBLISHABLE_KEY = '';
+    const STRIPE_SUCCESS_URL = 'https://expertmedical.ae/booking/success';
+    const STRIPE_CANCEL_URL = 'https://expertmedical.ae/booking/cancel';
 }
