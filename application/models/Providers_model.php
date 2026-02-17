@@ -49,6 +49,10 @@ class Providers_model extends EA_Model
         'isPrivate' => 'is_private',
         'ldapDn' => 'ldap_dn',
         'roleId' => 'id_roles',
+        'photo' => 'photo',
+        'bio' => 'bio',
+        'qualifications' => 'qualifications',
+        'specialty' => 'specialty',
     ];
 
     /**
@@ -767,6 +771,10 @@ class Providers_model extends EA_Model
             'ldapDn' => $provider['ldap_dn'],
             'timezone' => $provider['timezone'],
             'language' => $provider['language'],
+            'photo' => $provider['photo'] ?? null,
+            'bio' => $provider['bio'] ?? null,
+            'qualifications' => $provider['qualifications'] ?? null,
+            'specialty' => $provider['specialty'] ?? null,
         ];
 
         if (array_key_exists('services', $provider)) {
@@ -889,6 +897,22 @@ class Providers_model extends EA_Model
 
         if (array_key_exists('ldapDn', $provider)) {
             $decoded_resource['ldap_dn'] = $provider['ldapDn'];
+        }
+
+        if (array_key_exists('photo', $provider)) {
+            $decoded_resource['photo'] = $provider['photo'];
+        }
+
+        if (array_key_exists('bio', $provider)) {
+            $decoded_resource['bio'] = $provider['bio'];
+        }
+
+        if (array_key_exists('qualifications', $provider)) {
+            $decoded_resource['qualifications'] = $provider['qualifications'];
+        }
+
+        if (array_key_exists('specialty', $provider)) {
+            $decoded_resource['specialty'] = $provider['specialty'];
         }
 
         if (array_key_exists('settings', $provider)) {

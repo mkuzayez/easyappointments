@@ -297,6 +297,23 @@ class Appointments_api_v1 extends EA_Controller
             $manage_mode,
         );
 
+        // Send branded multilingual confirmation email to the customer.
+        try {
+            $this->load->library('multilingual_notifications');
+
+            $language = $customer['preferred_language'] ?? 'en';
+
+            $this->multilingual_notifications->send_appointment_confirmation(
+                $appointment,
+                $service,
+                $provider,
+                $customer,
+                $language,
+            );
+        } catch (Throwable $e) {
+            log_message('error', 'Multilingual email notification failed: ' . $e->getMessage());
+        }
+
         $this->webhooks_client->trigger(WEBHOOK_APPOINTMENT_SAVE, $appointment);
     }
 

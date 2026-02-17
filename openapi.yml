@@ -2401,9 +2401,13 @@ components:
         customField5:
           type: string
         ldapDn:
-          type: string          
+          type: string
         notes:
           type: string
+        preferredLanguage:
+          type: string
+          description: Preferred notification language (e.g. "en", "ar")
+          default: en
       example:
         id: 1
         firstName: Steve
@@ -2421,6 +2425,7 @@ components:
         customField5: Value5
         ldapDn: null
         notes: This is a test customer.
+        preferredLanguage: en
     CustomerPayload:
       type: object
       properties:
@@ -2456,6 +2461,10 @@ components:
           type: string
         notes:
           type: string
+        preferredLanguage:
+          type: string
+          description: Preferred notification language (e.g. "en", "ar")
+          default: en
       example:
         firstName: Steve
         lastName: Doe
@@ -2472,6 +2481,7 @@ components:
         customField5: Value5
         ldapDn: null
         notes: This is a test customer.
+        preferredLanguage: en
     ServiceRecord:
       type: object
       properties:
@@ -2719,6 +2729,22 @@ components:
           type: boolean
         ldapDn:
           type: string
+        photo:
+          type: string
+          description: URL or path to provider's profile photo
+          nullable: true
+        bio:
+          type: string
+          description: Provider biography / about text
+          nullable: true
+        qualifications:
+          type: string
+          description: Provider qualifications and certifications
+          nullable: true
+        specialty:
+          type: string
+          description: Provider medical specialty
+          nullable: true
         services:
           type: array
           items:
@@ -2770,6 +2796,10 @@ components:
         services: [ ]
         isPrivate: false
         ldapDn: null
+        photo: null
+        bio: Board-certified cardiologist with 15 years of experience
+        qualifications: MD, FACC
+        specialty: Cardiology
         settings:
           username: chrisdoe
           password: Password@123
@@ -2836,6 +2866,22 @@ components:
           type: boolean
         ldapDn:
           type: string
+        photo:
+          type: string
+          description: URL or path to provider's profile photo
+          nullable: true
+        bio:
+          type: string
+          description: Provider biography / about text
+          nullable: true
+        qualifications:
+          type: string
+          description: Provider qualifications and certifications
+          nullable: true
+        specialty:
+          type: string
+          description: Provider medical specialty
+          nullable: true
         services:
           type: array
           items:
@@ -2886,6 +2932,10 @@ components:
         language: english
         isPrivate: false
         ldapDn: null
+        photo: null
+        bio: Board-certified cardiologist with 15 years of experience
+        qualifications: MD, FACC
+        specialty: Cardiology
         services: [ ]
         settings:
           username: chrisdoe

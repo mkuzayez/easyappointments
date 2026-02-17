@@ -50,6 +50,7 @@ class Customers_model extends EA_Model
         'customField5' => 'custom_field_5',
         'notes' => 'notes',
         'ldapDn' => 'ldap_dn',
+        'preferredLanguage' => 'preferred_language',
     ];
 
     /**
@@ -464,6 +465,7 @@ class Customers_model extends EA_Model
             'customField4' => $customer['custom_field_4'],
             'customField5' => $customer['custom_field_5'],
             'ldapDn' => $customer['ldap_dn'],
+            'preferredLanguage' => $customer['preferred_language'] ?? 'en',
         ];
 
         $customer = $encoded_resource;
@@ -545,6 +547,10 @@ class Customers_model extends EA_Model
 
         if (array_key_exists('notes', $customer)) {
             $decoded_resource['notes'] = $customer['notes'];
+        }
+
+        if (array_key_exists('preferredLanguage', $customer)) {
+            $decoded_resource['preferred_language'] = $customer['preferredLanguage'];
         }
 
         $customer = $decoded_resource;
