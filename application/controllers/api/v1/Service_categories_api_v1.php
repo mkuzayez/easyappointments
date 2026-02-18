@@ -51,9 +51,15 @@ class Service_categories_api_v1 extends EA_Controller
 
             $with = $this->api->request_with();
 
-            $service_categories = empty($keyword)
-                ? $this->service_categories_model->get(null, $limit, $offset, $order_by)
-                : $this->service_categories_model->search($keyword, $limit, $offset, $order_by);
+            $branch_id = request('branchId');
+
+            if ($branch_id) {
+                $service_categories = $this->service_categories_model->get_by_branch((int) $branch_id, $keyword, $limit, $offset, $order_by);
+            } elseif (!empty($keyword)) {
+                $service_categories = $this->service_categories_model->search($keyword, $limit, $offset, $order_by);
+            } else {
+                $service_categories = $this->service_categories_model->get(null, $limit, $offset, $order_by);
+            }
 
             foreach ($service_categories as &$service_category) {
                 $this->service_categories_model->api_encode($service_category);

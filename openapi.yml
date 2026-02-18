@@ -834,6 +834,11 @@ paths:
           in: query
           schema:
             type: string
+        - name: branchId
+          in: query
+          schema:
+            type: integer
+          description: Filter service categories to only those that have services assigned to this branch
       responses:
         '200':
           description: OK
@@ -2541,6 +2546,13 @@ components:
           type: string
         status:
           type: string
+          enum:
+            - Booked
+            - Confirmed
+            - Rescheduled
+            - Cancelled
+            - Draft
+            - Completed
         notes:
           type: string
         customerId:

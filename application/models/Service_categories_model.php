@@ -215,6 +215,52 @@ class Service_categories_model extends EA_Model
     }
 
     /**
+     * Get service categories that have at least one service assigned to a given branch.
+     *
+     * @param int $branch_id Branch ID.
+     * @param string|null $keyword Optional search keyword.
+     * @param int|null $limit Record limit.
+     * @param int|null $offset Record offset.
+     * @param string|null $order_by Order by.
+     *
+     * @return array Returns an array of service categories.
+     */
+    public function get_by_branch(
+        int $branch_id,
+        ?string $keyword = null,
+        ?int $limit = null,
+        ?int $offset = null,
+        ?string $order_by = null,
+    ): array {
+        $this->db
+            ->select('service_categories.*')
+            ->distinct()
+            ->from('service_categories')
+            ->join('services', 'services.id_service_categories = service_categories.id', 'inner')
+            ->where('services.id_branches', $branch_id);
+
+        if (!empty($keyword)) {
+            $this->db
+                ->group_start()
+                ->like('service_categories.name', $keyword)
+                ->or_like('service_categories.description', $keyword)
+                ->group_end();
+        }
+
+        if ($order_by !== null) {
+            $this->db->order_by($this->quote_order_by($order_by));
+        }
+
+        $service_categories = $this->db->get(null, $limit, $offset)->result_array();
+
+        foreach ($service_categories as &$service_category) {
+            $this->cast($service_category);
+        }
+
+        return $service_categories;
+    }
+
+    /**
      * Search service categories by the provided keyword.
      *
      * @param string $keyword Search keyword.
