@@ -63,8 +63,25 @@ class Availabilities_api_v1 extends EA_Controller
 
             $date = request('date');
 
+            $branch_id = request('branchId');
+
             if (!$date) {
                 $date = date('Y-m-d');
+            }
+
+            if ($branch_id && $provider_id) {
+                $provider_at_branch = $this->db
+                    ->get_where('provider_branches', [
+                        'id_users_provider' => (int) $provider_id,
+                        'id_branches' => (int) $branch_id,
+                    ])
+                    ->num_rows();
+
+                if (!$provider_at_branch) {
+                    json_response([]);
+
+                    return;
+                }
             }
 
             $provider = $this->providers_model->find($provider_id);

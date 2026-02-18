@@ -54,6 +54,12 @@ class Booking extends EA_Controller
         'id_users_provider',
         'id_users_customer',
         'id_services',
+        'payment_status',
+        'payment_method',
+        'payment_amount',
+        'payment_currency',
+        'stripe_session_id',
+        'stripe_payment_intent_id',
     ];
 
     /**
@@ -395,6 +401,84 @@ class Booking extends EA_Controller
                     throw new RuntimeException(lang('customer_is_already_booked'));
                 }
             }
+
+            // --- Payment enforcement ---
+            // Services with a price > 0 require a valid payment path.
+            // Rescheduling (manage_mode) skips payment — the original payment still applies.
+            $service_price = (float) ($service['price'] ?? 0);
+            $stripe_session_id = $appointment['stripe_session_id'] ?? ($post_data['stripe_session_id'] ?? null);
+            $payment_method = $appointment['payment_method'] ?? ($post_data['payment_method'] ?? null);
+
+            if ($service_price > 0 && !$manage_mode) {
+                if (!empty($stripe_session_id)) {
+                    // Online payment path — verify with Stripe.
+                    $this->load->library('stripe_payment');
+
+                    // Prevent replay: reject if this session ID is already used by another appointment.
+                    $existing = $this->db
+                        ->where('stripe_session_id', $stripe_session_id)
+                        ->get('appointments')
+                        ->row_array();
+
+                    if ($existing) {
+                        throw new InvalidArgumentException('This Stripe session has already been used for appointment #' . $existing['id'] . '.');
+                    }
+
+                    $is_paid = $this->stripe_payment->verify_payment($stripe_session_id);
+
+                    if (!$is_paid) {
+                        throw new RuntimeException('Payment not verified. Please complete payment first.');
+                    }
+
+                    $session = $this->stripe_payment->get_session($stripe_session_id);
+
+                    // Verify the session was created for the same service being booked.
+                    $session_service_id = $session->metadata['service_id'] ?? null;
+
+                    if ($session_service_id === null) {
+                        throw new InvalidArgumentException('Stripe session is missing service_id metadata. Payment cannot be verified against the booked service.');
+                    }
+
+                    if ((int) $session_service_id !== (int) $appointment['id_services']) {
+                        throw new InvalidArgumentException('Payment session was created for a different service (service #' . $session_service_id . '). Cannot book service #' . $appointment['id_services'] . ' with this payment.');
+                    }
+
+                    // Verify the paid amount matches the service price.
+                    $expected_amount_cents = (int) round($service_price * 100);
+
+                    if ($session->amount_total !== $expected_amount_cents) {
+                        throw new InvalidArgumentException('Payment amount does not match the service price.');
+                    }
+
+                    // Prevent replay via payment intent.
+                    $existing_intent = $this->db
+                        ->where('stripe_payment_intent_id', $session->payment_intent)
+                        ->get('appointments')
+                        ->row_array();
+
+                    if ($existing_intent) {
+                        throw new InvalidArgumentException('This payment intent has already been used for appointment #' . $existing_intent['id'] . '.');
+                    }
+
+                    $appointment['payment_status'] = 'paid';
+                    $appointment['payment_method'] = 'online';
+                    $appointment['stripe_session_id'] = $stripe_session_id;
+                    $appointment['stripe_payment_intent_id'] = $session->payment_intent;
+                    $appointment['payment_amount'] = $session->amount_total / 100;
+                    $appointment['payment_currency'] = strtoupper($session->currency);
+                } elseif (!empty($payment_method) && $payment_method === 'offline') {
+                    // Offline payment path (cash/insurance at clinic).
+                    $appointment['payment_status'] = 'pending';
+                    $appointment['payment_method'] = 'offline';
+                    $appointment['payment_amount'] = $service_price;
+                    $appointment['payment_currency'] = 'AED';
+                } else {
+                    throw new InvalidArgumentException(
+                        'Payment is required. Provide a valid stripe_session_id for online payment or set payment_method to "offline".'
+                    );
+                }
+            }
+            // --- End payment enforcement ---
 
             if (empty($appointment['location']) && !empty($service['location'])) {
                 $appointment['location'] = $service['location'];

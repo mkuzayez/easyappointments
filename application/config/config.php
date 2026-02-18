@@ -488,6 +488,7 @@ $config['stripe_secret_key'] = Config::STRIPE_SECRET_KEY;
 $config['stripe_publishable_key'] = Config::STRIPE_PUBLISHABLE_KEY;
 $config['stripe_success_url'] = Config::STRIPE_SUCCESS_URL;
 $config['stripe_cancel_url'] = Config::STRIPE_CANCEL_URL;
+$config['frontend_url'] = Config::FRONTEND_URL;
 
 /* End of file config.php */
 /* Location: ./application/config/config.php */

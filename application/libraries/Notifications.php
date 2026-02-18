@@ -60,6 +60,7 @@ class Notifications
         array $customer,
         array $settings,
         bool $manage_mode = false,
+        bool $skip_customer = false,
     ): void {
         try {
             $current_language = config('language');
@@ -70,9 +71,11 @@ class Notifications
 
             $ics_stream = $this->CI->ics_file->get_stream($appointment, $service, $provider, $customer);
 
-            // Notify customer.
+            // Notify customer (skip when multilingual notifications handle customer emails).
             $send_customer =
-                !empty($customer['email']) && filter_var(setting('customer_notifications'), FILTER_VALIDATE_BOOLEAN);
+                !$skip_customer
+                && !empty($customer['email'])
+                && filter_var(setting('customer_notifications'), FILTER_VALIDATE_BOOLEAN);
 
             if ($send_customer === true) {
                 config(['language' => $customer['language']]);

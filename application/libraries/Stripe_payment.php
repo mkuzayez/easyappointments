@@ -140,6 +140,40 @@ class Stripe_payment
     }
 
     /**
+     * Create a refund for a payment intent.
+     *
+     * @param string $payment_intent_id Stripe payment intent ID.
+     * @param float|null $amount Refund amount (null for full refund). In the base currency unit (e.g. AED, not fils).
+     *
+     * @return array Returns refund_id, status, amount, and currency.
+     *
+     * @throws RuntimeException
+     */
+    public function create_refund(string $payment_intent_id, ?float $amount = null): array
+    {
+        try {
+            $params = [
+                'payment_intent' => $payment_intent_id,
+            ];
+
+            if ($amount !== null) {
+                $params['amount'] = (int) round($amount * 100);
+            }
+
+            $refund = \Stripe\Refund::create($params);
+
+            return [
+                'refund_id' => $refund->id,
+                'status' => $refund->status,
+                'amount' => $refund->amount / 100,
+                'currency' => strtoupper($refund->currency),
+            ];
+        } catch (\Stripe\Exception\ApiErrorException $e) {
+            throw new RuntimeException('Stripe refund error: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Verify payment status for a session.
      *
      * @param string $session_id Stripe session ID.

@@ -21,9 +21,7 @@ class Migration_Create_provider_branches_table extends EA_Migration
         if (!$this->db->table_exists('provider_branches')) {
             $this->dbforge->add_field([
                 'id_users_provider' => [
-                    'type' => 'BIGINT',
-                    'constraint' => 20,
-                    'unsigned' => true,
+                    'type' => 'INT',
                 ],
                 'id_branches' => [
                     'type' => 'BIGINT',

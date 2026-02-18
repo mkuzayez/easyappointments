@@ -28,6 +28,7 @@ class Appointments_model extends EA_Model
         'id_users_customer' => 'integer',
         'id_services' => 'integer',
         'payment_amount' => 'float',
+        'refund_amount' => 'float',
     ];
 
     /**
@@ -54,6 +55,9 @@ class Appointments_model extends EA_Model
         'stripePaymentIntentId' => 'stripe_payment_intent_id',
         'paymentAmount' => 'payment_amount',
         'paymentCurrency' => 'payment_currency',
+        'refundAmount' => 'refund_amount',
+        'refundStatus' => 'refund_status',
+        'refundReason' => 'refund_reason',
     ];
 
     /**
@@ -590,6 +594,11 @@ class Appointments_model extends EA_Model
                 ? (float) $appointment['payment_amount']
                 : null,
             'paymentCurrency' => $appointment['payment_currency'] ?? null,
+            'refundAmount' => array_key_exists('refund_amount', $appointment) && $appointment['refund_amount'] !== null
+                ? (float) $appointment['refund_amount']
+                : null,
+            'refundStatus' => $appointment['refund_status'] ?? null,
+            'refundReason' => $appointment['refund_reason'] ?? null,
         ];
 
         $appointment = $encoded_resource;
@@ -679,6 +688,18 @@ class Appointments_model extends EA_Model
 
         if (array_key_exists('paymentCurrency', $appointment)) {
             $decoded_request['payment_currency'] = $appointment['paymentCurrency'];
+        }
+
+        if (array_key_exists('refundAmount', $appointment)) {
+            $decoded_request['refund_amount'] = $appointment['refundAmount'];
+        }
+
+        if (array_key_exists('refundStatus', $appointment)) {
+            $decoded_request['refund_status'] = $appointment['refundStatus'];
+        }
+
+        if (array_key_exists('refundReason', $appointment)) {
+            $decoded_request['refund_reason'] = $appointment['refundReason'];
         }
 
         $decoded_request['is_unavailability'] = false;

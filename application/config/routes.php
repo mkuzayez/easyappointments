@@ -149,6 +149,8 @@ route_api_resource($route, 'blocked_periods', 'api/v1/');
 
 route_api_resource($route, 'branches', 'api/v1/');
 
+route_api_resource($route, 'feedback', 'api/v1/');
+
 $route['api/v1/settings']['get'] = 'api/v1/settings_api_v1/index';
 
 $route['api/v1/settings/(:any)']['get'] = 'api/v1/settings_api_v1/show/$1';
@@ -160,6 +162,12 @@ $route['api/v1/availabilities']['get'] = 'api/v1/availabilities_api_v1/get';
 $route['api/v1/payments/create-session']['post'] = 'api/v1/payments_api_v1/create_session';
 
 $route['api/v1/payments/verify']['post'] = 'api/v1/payments_api_v1/verify';
+
+$route['api/v1/payments/(:num)/refund']['post'] = 'api/v1/payments_api_v1/refund/$1';
+
+$route['api/v1/feedback/(:num)/approve']['patch'] = 'api/v1/feedback_api_v1/approve/$1';
+
+$route['api/v1/feedback/provider/(:num)/rating']['get'] = 'api/v1/feedback_api_v1/provider_rating/$1';
 
 /*
 | -------------------------------------------------------------------------

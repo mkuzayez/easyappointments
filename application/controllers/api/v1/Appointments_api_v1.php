@@ -224,6 +224,16 @@ class Appointments_api_v1 extends EA_Controller
             if (!empty($appointment['stripe_session_id'])) {
                 $this->load->library('stripe_payment');
 
+                // Prevent replay: reject if this session ID is already used by another appointment.
+                $existing = $this->db
+                    ->where('stripe_session_id', $appointment['stripe_session_id'])
+                    ->get('appointments')
+                    ->row_array();
+
+                if ($existing) {
+                    throw new InvalidArgumentException('This Stripe session has already been used for appointment #' . $existing['id'] . '.');
+                }
+
                 $is_paid = $this->stripe_payment->verify_payment($appointment['stripe_session_id']);
 
                 if (!$is_paid) {
@@ -231,6 +241,35 @@ class Appointments_api_v1 extends EA_Controller
                 }
 
                 $session = $this->stripe_payment->get_session($appointment['stripe_session_id']);
+
+                // Verify the session was created for the same service being booked.
+                $session_service_id = $session->metadata['service_id'] ?? null;
+
+                if ($session_service_id === null) {
+                    throw new InvalidArgumentException('Stripe session is missing service_id metadata. Payment cannot be verified against the booked service.');
+                }
+
+                if ((int) $session_service_id !== (int) $appointment['id_services']) {
+                    throw new InvalidArgumentException('Payment session was created for a different service (service #' . $session_service_id . '). Cannot book service #' . $appointment['id_services'] . ' with this payment.');
+                }
+
+                // Verify the paid amount matches the service price.
+                $service = $this->services_model->find((int) $appointment['id_services']);
+                $expected_amount_cents = (int) round((float) $service['price'] * 100);
+
+                if ($session->amount_total !== $expected_amount_cents) {
+                    throw new InvalidArgumentException('Payment amount does not match the service price.');
+                }
+
+                // Prevent replay via payment intent as well.
+                $existing_intent = $this->db
+                    ->where('stripe_payment_intent_id', $session->payment_intent)
+                    ->get('appointments')
+                    ->row_array();
+
+                if ($existing_intent) {
+                    throw new InvalidArgumentException('This payment intent has already been used for appointment #' . $existing_intent['id'] . '.');
+                }
 
                 $appointment['payment_status'] = 'paid';
                 $appointment['payment_method'] = 'online';
@@ -242,6 +281,11 @@ class Appointments_api_v1 extends EA_Controller
                 $appointment['payment_method'] === 'offline'
             ) {
                 $appointment['payment_status'] = 'pending';
+            } else {
+                // No valid payment path — reject the appointment.
+                throw new InvalidArgumentException(
+                    'Payment is required. Provide a valid stripeSessionId for online payment or set paymentMethod to "offline".'
+                );
             }
 
             $appointment_id = $this->appointments_model->save($appointment);
@@ -263,9 +307,13 @@ class Appointments_api_v1 extends EA_Controller
      *
      * @param array $appointment Appointment data.
      * @param string $action Performed action ("store" or "update").
+     * @param array|null $original_appointment Original appointment data before update (for detecting changes).
      */
-    private function notify_and_sync_appointment(array $appointment, string $action = 'store'): void
-    {
+    private function notify_and_sync_appointment(
+        array $appointment,
+        string $action = 'store',
+        ?array $original_appointment = null,
+    ): void {
         $manage_mode = $action === 'update';
 
         $service = $this->services_model->find($appointment['id_services']);
@@ -288,6 +336,7 @@ class Appointments_api_v1 extends EA_Controller
 
         $this->synchronization->sync_appointment_saved($appointment, $service, $provider, $customer, $settings);
 
+        // Skip customer email in legacy notifier — multilingual notifications handle customer emails.
         $this->notifications->notify_appointment_saved(
             $appointment,
             $service,
@@ -295,21 +344,81 @@ class Appointments_api_v1 extends EA_Controller
             $customer,
             $settings,
             $manage_mode,
+            skip_customer: true,
         );
 
-        // Send branded multilingual confirmation email to the customer.
+        // Send branded multilingual emails to the customer based on the action and appointment state.
         try {
             $this->load->library('multilingual_notifications');
 
-            $language = $customer['preferred_language'] ?? 'en';
+            if ($action === 'store') {
+                if (
+                    !empty($appointment['payment_method']) &&
+                    $appointment['payment_method'] === 'offline'
+                ) {
+                    // Offline booking — send payment pending email.
+                    $frontend_base = rtrim(config('frontend_url'), '/');
+                    $payment_link = $frontend_base . '/booking/payment/' . ($appointment['hash'] ?? '');
 
-            $this->multilingual_notifications->send_appointment_confirmation(
-                $appointment,
-                $service,
-                $provider,
-                $customer,
-                $language,
-            );
+                    $this->multilingual_notifications->send_payment_pending(
+                        $appointment,
+                        $service,
+                        $provider,
+                        $customer,
+                        $payment_link,
+                    );
+                } else {
+                    // Online/paid booking — send confirmation email.
+                    $this->multilingual_notifications->send_appointment_confirmation(
+                        $appointment,
+                        $service,
+                        $provider,
+                        $customer,
+                    );
+                }
+            } elseif ($action === 'update' && $original_appointment) {
+                $old_status = $original_appointment['status'] ?? null;
+                $new_status = $appointment['status'] ?? null;
+                $old_start = $original_appointment['start_datetime'] ?? null;
+                $new_start = $appointment['start_datetime'] ?? null;
+
+                if ($new_status === 'cancelled' && $old_status !== 'cancelled') {
+                    // Status changed to cancelled — send cancellation email.
+                    $this->multilingual_notifications->send_appointment_cancelled(
+                        $appointment,
+                        $service,
+                        $provider,
+                        $customer,
+                    );
+                } elseif ($new_start !== $old_start) {
+                    // Start datetime changed — send rescheduled email.
+                    $this->multilingual_notifications->send_appointment_rescheduled(
+                        $appointment,
+                        $service,
+                        $provider,
+                        $customer,
+                    );
+                } elseif ($new_status === 'completed' && $old_status !== 'completed') {
+                    // Status changed to completed — send feedback request email.
+                    $frontend_base = rtrim(config('frontend_url'), '/');
+                    $feedback_link = $frontend_base . '/feedback/' . ($appointment['hash'] ?? '');
+
+                    $this->multilingual_notifications->send_feedback_request(
+                        $appointment,
+                        $provider,
+                        $customer,
+                        $feedback_link,
+                    );
+                } else {
+                    // Generic update — send confirmation email.
+                    $this->multilingual_notifications->send_appointment_confirmation(
+                        $appointment,
+                        $service,
+                        $provider,
+                        $customer,
+                    );
+                }
+            }
         } catch (Throwable $e) {
             log_message('error', 'Multilingual email notification failed: ' . $e->getMessage());
         }
@@ -343,7 +452,7 @@ class Appointments_api_v1 extends EA_Controller
 
             $updated_appointment = $this->appointments_model->find($appointment_id);
 
-            $this->notify_and_sync_appointment($updated_appointment, 'update');
+            $this->notify_and_sync_appointment($updated_appointment, 'update', $original_appointment);
 
             $this->appointments_model->api_encode($updated_appointment);
 

@@ -24,6 +24,7 @@ tags:
   - name: blocked_periods
   - name: branches
   - name: customers
+  - name: feedback
   - name: payments
   - name: providers
   - name: secretaries
@@ -51,6 +52,11 @@ paths:
           in: query
           schema:
             type: string
+        - name: branchId
+          in: query
+          schema:
+            type: integer
+          description: Filter availabilities to only show slots for providers at this branch
       responses:
         '200':
           description: OK
@@ -2196,6 +2202,320 @@ paths:
       security:
         - BearerToken: [ ]
         - BasicAuth: [ ]
+  /payments/{id}/refund:
+    post:
+      tags:
+        - payments
+      summary: Refund a payment
+      description: Creates a Stripe refund for a paid appointment.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Payment/Appointment ID
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - appointmentId
+              properties:
+                appointmentId:
+                  type: integer
+                  description: Appointment ID to refund
+                amount:
+                  type: number
+                  format: float
+                  description: Partial refund amount (omit for full refund)
+                reason:
+                  type: string
+                  description: Reason for the refund
+              example:
+                appointmentId: 1
+                amount: 250.00
+                reason: Patient cancelled
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  refund:
+                    type: object
+                    properties:
+                      refundId:
+                        type: string
+                      status:
+                        type: string
+                      amount:
+                        type: number
+                      currency:
+                        type: string
+                  appointment:
+                    type: object
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - BearerToken: [ ]
+        - BasicAuth: [ ]
+  /feedback:
+    get:
+      tags:
+        - feedback
+      summary: Get all feedback
+      parameters:
+        - name: providerId
+          in: query
+          schema:
+            type: integer
+        - name: customerId
+          in: query
+          schema:
+            type: integer
+        - name: appointmentId
+          in: query
+          schema:
+            type: integer
+        - name: approved
+          in: query
+          schema:
+            type: boolean
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: length
+          in: query
+          schema:
+            type: integer
+        - name: sort
+          in: query
+          schema:
+            type: string
+        - name: fields
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeedbackRecord'
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - BearerToken: [ ]
+        - BasicAuth: [ ]
+    post:
+      tags:
+        - feedback
+      summary: Create feedback
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeedbackPayload'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedbackRecord'
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - BearerToken: [ ]
+        - BasicAuth: [ ]
+  /feedback/{id}:
+    get:
+      tags:
+        - feedback
+      summary: Get a single feedback record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: fields
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedbackRecord'
+        '404':
+          description: Not Found
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - BearerToken: [ ]
+        - BasicAuth: [ ]
+    put:
+      tags:
+        - feedback
+      summary: Update a feedback record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeedbackPayload'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedbackRecord'
+        '404':
+          description: Not Found
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - BearerToken: [ ]
+        - BasicAuth: [ ]
+    delete:
+      tags:
+        - feedback
+      summary: Delete a feedback record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: No Content
+        '404':
+          description: Not Found
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - BearerToken: [ ]
+        - BasicAuth: [ ]
+  /feedback/{id}/approve:
+    patch:
+      tags:
+        - feedback
+      summary: Approve a feedback record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedbackRecord'
+        '404':
+          description: Not Found
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - BearerToken: [ ]
+        - BasicAuth: [ ]
+  /feedback/provider/{id}/rating:
+    get:
+      tags:
+        - feedback
+      summary: Get average provider rating
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Provider user ID
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderRatingResponse'
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - BearerToken: [ ]
+        - BasicAuth: [ ]
 components:
   schemas:
     Availabilities:
@@ -2252,6 +2572,21 @@ components:
         paymentCurrency:
           type: string
           description: Payment currency (e.g. AED, USD)
+        refundAmount:
+          type: number
+          format: float
+          description: Refund amount (if refunded)
+        refundStatus:
+          type: string
+          description: Refund status (none, pending, completed, failed)
+          enum:
+            - none
+            - pending
+            - completed
+            - failed
+        refundReason:
+          type: string
+          description: Reason for refund
       example:
         id: 1
         book: '2021-01-01 12:00:00'
@@ -2273,6 +2608,9 @@ components:
         stripePaymentIntentId: pi_abc123
         paymentAmount: 250.00
         paymentCurrency: AED
+        refundAmount: null
+        refundStatus: none
+        refundReason: null
     AppointmentPayload:
       type: object
       properties:
@@ -2296,10 +2634,10 @@ components:
           type: integer
         stripeSessionId:
           type: string
-          description: Stripe checkout session ID (for online payment verification)
+          description: Stripe checkout session ID (required for online payment). Either this or paymentMethod=offline must be provided when the service has a price > 0.
         paymentMethod:
           type: string
-          description: Payment method - "offline" for pay-at-clinic
+          description: Payment method. Use "offline" for pay-at-clinic. Required when stripeSessionId is not provided and the service has a price > 0.
           enum:
             - online
             - offline
@@ -3256,23 +3594,18 @@ components:
     PaymentSessionPayload:
       type: object
       required:
-        - amount
+        - serviceId
         - customerEmail
       properties:
-        amount:
-          type: number
-          format: float
-          description: Payment amount
-        currency:
-          type: string
-          description: Currency code (default AED)
-          default: AED
+        serviceId:
+          type: integer
+          description: Service ID — the payment amount is sourced from the service's price field (required for security)
         customerEmail:
           type: string
           description: Customer email for the checkout session
         metadata:
           type: object
-          description: Optional metadata (e.g. serviceId, providerId)
+          description: Optional metadata (e.g. providerId, appointment details)
         successUrl:
           type: string
           description: URL to redirect after successful payment
@@ -3280,13 +3613,14 @@ components:
           type: string
           description: URL to redirect after cancelled payment
       example:
-        amount: 250.00
-        currency: AED
+        serviceId: 1
         customerEmail: patient@example.com
         metadata:
-          serviceId: 1
           providerId: 1
+          appointmentId: 123
           service_name: General Checkup
+        successUrl: https://example.com/booking/success
+        cancelUrl: https://example.com/booking/cancel
     PaymentSessionResponse:
       type: object
       properties:
@@ -3328,6 +3662,98 @@ components:
         paymentIntentId: pi_abc123
         amountTotal: 250.00
         currency: AED
+    FeedbackRecord:
+      type: object
+      properties:
+        id:
+          type: integer
+        appointmentId:
+          type: integer
+        customerId:
+          type: integer
+        providerId:
+          type: integer
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        feedbackText:
+          type: string
+        feedbackCategory:
+          type: string
+          enum:
+            - service
+            - doctor
+            - facility
+            - overall
+        isApproved:
+          type: boolean
+        submittedDate:
+          type: string
+          format: date-time
+        approvedDate:
+          type: string
+          format: date-time
+      example:
+        id: 1
+        appointmentId: 10
+        customerId: 5
+        providerId: 2
+        rating: 4
+        feedbackText: Great service
+        feedbackCategory: overall
+        isApproved: false
+        submittedDate: '2026-02-17T10:00:00'
+        approvedDate: null
+    FeedbackPayload:
+      type: object
+      required:
+        - appointmentId
+        - customerId
+        - providerId
+        - rating
+      properties:
+        appointmentId:
+          type: integer
+        customerId:
+          type: integer
+        providerId:
+          type: integer
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        feedbackText:
+          type: string
+        feedbackCategory:
+          type: string
+          enum:
+            - service
+            - doctor
+            - facility
+            - overall
+          default: overall
+      example:
+        appointmentId: 10
+        customerId: 5
+        providerId: 2
+        rating: 4
+        feedbackText: Great service
+        feedbackCategory: overall
+    ProviderRatingResponse:
+      type: object
+      properties:
+        providerId:
+          type: integer
+        averageRating:
+          type: number
+          format: float
+        totalReviews:
+          type: integer
+      example:
+        providerId: 2
+        averageRating: 4.3
+        totalReviews: 12
     ErrorResponse:
       type: object
       properties:
