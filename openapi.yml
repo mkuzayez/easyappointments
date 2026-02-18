@@ -33,6 +33,11 @@ tags:
   - name: settings
   - name: unavailabilities
   - name: webhooks
+  - name: medicine_categories
+  - name: medicines
+  - name: prescriptions
+  - name: pharmacy_orders
+  - name: pharmacy_cart
 paths:
   /availabilities:
     get:
@@ -2521,6 +2526,591 @@ paths:
       security:
         - BearerToken: [ ]
         - BasicAuth: [ ]
+  /medicine_categories:
+    get:
+      tags:
+        - medicine_categories
+      summary: Get medicine category collection
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/length'
+        - $ref: '#/components/parameters/sort'
+        - $ref: '#/components/parameters/q'
+        - $ref: '#/components/parameters/fields'
+        - name: isActive
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MedicineCategoryRecord'
+      security:
+        - BearerToken: [ ]
+        - BasicAuth: [ ]
+    post:
+      tags:
+        - medicine_categories
+      summary: Store a new medicine category
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MedicineCategoryPayload'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicineCategoryRecord'
+      security:
+        - BearerToken: [ ]
+        - BasicAuth: [ ]
+  /medicine_categories/{medicineCategoryId}:
+    get:
+      tags:
+        - medicine_categories
+      summary: Get a single medicine category
+      parameters:
+        - name: medicineCategoryId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicineCategoryRecord'
+      security:
+        - BearerToken: [ ]
+        - BasicAuth: [ ]
+    put:
+      tags:
+        - medicine_categories
+      summary: Update a medicine category
+      parameters:
+        - name: medicineCategoryId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MedicineCategoryPayload'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicineCategoryRecord'
+      security:
+        - BearerToken: [ ]
+        - BasicAuth: [ ]
+    delete:
+      tags:
+        - medicine_categories
+      summary: Delete a medicine category
+      parameters:
+        - name: medicineCategoryId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: No Content
+      security:
+        - BearerToken: [ ]
+        - BasicAuth: [ ]
+  /medicines:
+    get:
+      tags:
+        - medicines
+      summary: Get medicine collection
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/length'
+        - $ref: '#/components/parameters/sort'
+        - $ref: '#/components/parameters/q'
+        - $ref: '#/components/parameters/fields'
+        - name: categoryId
+          in: query
+          schema:
+            type: integer
+        - name: activeAndInStock
+          in: query
+          schema:
+            type: boolean
+        - name: isActive
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MedicineRecord'
+      security:
+        - BearerToken: [ ]
+        - BasicAuth: [ ]
+    post:
+      tags:
+        - medicines
+      summary: Store a new medicine
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MedicinePayload'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicineRecord'
+      security:
+        - BearerToken: [ ]
+        - BasicAuth: [ ]
+  /medicines/{medicineId}:
+    get:
+      tags:
+        - medicines
+      summary: Get a single medicine
+      parameters:
+        - name: medicineId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicineRecord'
+      security:
+        - BearerToken: [ ]
+        - BasicAuth: [ ]
+    put:
+      tags:
+        - medicines
+      summary: Update a medicine
+      parameters:
+        - name: medicineId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MedicinePayload'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicineRecord'
+      security:
+        - BearerToken: [ ]
+        - BasicAuth: [ ]
+    delete:
+      tags:
+        - medicines
+      summary: Soft-delete a medicine (sets is_active=0)
+      parameters:
+        - name: medicineId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: No Content
+      security:
+        - BearerToken: [ ]
+        - BasicAuth: [ ]
+  /prescriptions:
+    get:
+      tags:
+        - prescriptions
+      summary: Get prescription collection
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/length'
+        - $ref: '#/components/parameters/sort'
+        - $ref: '#/components/parameters/fields'
+        - name: providerId
+          in: query
+          schema:
+            type: integer
+        - name: customerId
+          in: query
+          schema:
+            type: integer
+        - name: appointmentId
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PrescriptionRecord'
+      security:
+        - BearerToken: [ ]
+        - BasicAuth: [ ]
+    post:
+      tags:
+        - prescriptions
+      summary: Create a prescription with items
+      description: Creates a prescription for a completed appointment, snapshots medicine data, and sends email.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - appointmentId
+                - items
+              properties:
+                appointmentId:
+                  type: integer
+                notes:
+                  type: string
+                items:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - medicineId
+                    properties:
+                      medicineId:
+                        type: integer
+                      quantity:
+                        type: integer
+                        default: 1
+                      dosageNotes:
+                        type: string
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PrescriptionRecord'
+                  - type: object
+                    properties:
+                      cartUrl:
+                        type: string
+      security:
+        - BearerToken: [ ]
+        - BasicAuth: [ ]
+  /prescriptions/{prescriptionId}:
+    get:
+      tags:
+        - prescriptions
+      summary: Get a single prescription with items
+      parameters:
+        - name: prescriptionId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrescriptionRecord'
+      security:
+        - BearerToken: [ ]
+        - BasicAuth: [ ]
+    put:
+      tags:
+        - prescriptions
+      summary: Update a prescription
+      parameters:
+        - name: prescriptionId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                notes:
+                  type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrescriptionRecord'
+      security:
+        - BearerToken: [ ]
+        - BasicAuth: [ ]
+    delete:
+      tags:
+        - prescriptions
+      summary: Delete a prescription
+      parameters:
+        - name: prescriptionId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: No Content
+      security:
+        - BearerToken: [ ]
+        - BasicAuth: [ ]
+  /pharmacy_orders:
+    get:
+      tags:
+        - pharmacy_orders
+      summary: Get pharmacy order collection
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/length'
+        - $ref: '#/components/parameters/sort'
+        - $ref: '#/components/parameters/fields'
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, processing, delivered, ready_for_pickup, cancelled]
+        - name: paymentStatus
+          in: query
+          schema:
+            type: string
+            enum: [pending, paid, refunded]
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PharmacyOrderRecord'
+      security:
+        - BearerToken: [ ]
+        - BasicAuth: [ ]
+  /pharmacy_orders/{orderId}:
+    get:
+      tags:
+        - pharmacy_orders
+      summary: Get a single pharmacy order with items
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PharmacyOrderRecord'
+      security:
+        - BearerToken: [ ]
+        - BasicAuth: [ ]
+  /pharmacy_orders/{orderId}/status:
+    patch:
+      tags:
+        - pharmacy_orders
+      summary: Update pharmacy order fulfillment status
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [pending, processing, delivered, ready_for_pickup, cancelled]
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PharmacyOrderRecord'
+      security:
+        - BearerToken: [ ]
+        - BasicAuth: [ ]
+  /pharmacy/cart/{hash}:
+    get:
+      tags:
+        - pharmacy_cart
+      summary: Get prescription for cart (public, no auth)
+      parameters:
+        - name: hash
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PrescriptionRecord'
+                  - type: object
+                    properties:
+                      subtotal:
+                        type: number
+                      total:
+                        type: number
+                      currency:
+                        type: string
+                      customer:
+                        type: object
+                        properties:
+                          firstName:
+                            type: string
+                          lastName:
+                            type: string
+                          email:
+                            type: string
+                          phone:
+                            type: string
+  /pharmacy/cart/{hash}/order:
+    post:
+      tags:
+        - pharmacy_cart
+      summary: Create pharmacy order and Stripe session (public, no auth)
+      parameters:
+        - name: hash
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - customerEmail
+                - fulfillmentMethod
+              properties:
+                customerFirstName:
+                  type: string
+                customerLastName:
+                  type: string
+                customerEmail:
+                  type: string
+                customerPhone:
+                  type: string
+                fulfillmentMethod:
+                  type: string
+                  enum: [home_delivery, in_clinic_pickup]
+                deliveryAddress:
+                  type: string
+                branchId:
+                  type: integer
+                successUrl:
+                  type: string
+                cancelUrl:
+                  type: string
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orderId:
+                    type: integer
+                  orderHash:
+                    type: string
+                  sessionId:
+                    type: string
+                  checkoutUrl:
+                    type: string
+                  total:
+                    type: number
+                  currency:
+                    type: string
+  /pharmacy/cart/verify-payment:
+    post:
+      tags:
+        - pharmacy_cart
+      summary: Verify Stripe payment for pharmacy order (public, no auth)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - sessionId
+              properties:
+                sessionId:
+                  type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  orderId:
+                    type: integer
+                  paymentIntentId:
+                    type: string
+                  amountTotal:
+                    type: number
+                  currency:
+                    type: string
 components:
   schemas:
     Availabilities:
@@ -3766,6 +4356,203 @@ components:
         providerId: 2
         averageRating: 4.3
         totalReviews: 12
+    MedicineCategoryRecord:
+      type: object
+      properties:
+        id:
+          type: integer
+        nameEn:
+          type: string
+        nameAr:
+          type: string
+        description:
+          type: string
+        isActive:
+          type: boolean
+    MedicineCategoryPayload:
+      type: object
+      required:
+        - nameEn
+      properties:
+        nameEn:
+          type: string
+        nameAr:
+          type: string
+        description:
+          type: string
+        isActive:
+          type: boolean
+    MedicineRecord:
+      type: object
+      properties:
+        id:
+          type: integer
+        medicineCategoryId:
+          type: integer
+        nameEn:
+          type: string
+        nameAr:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+          format: float
+        unit:
+          type: string
+          enum: [tablet, capsule, ml, mg, sachet, tube, bottle, piece]
+        stockStatus:
+          type: string
+          enum: [in_stock, out_of_stock]
+        isActive:
+          type: boolean
+    MedicinePayload:
+      type: object
+      required:
+        - medicineCategoryId
+        - nameEn
+        - price
+      properties:
+        medicineCategoryId:
+          type: integer
+        nameEn:
+          type: string
+        nameAr:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+          format: float
+        unit:
+          type: string
+          enum: [tablet, capsule, ml, mg, sachet, tube, bottle, piece]
+        stockStatus:
+          type: string
+          enum: [in_stock, out_of_stock]
+        isActive:
+          type: boolean
+    PrescriptionItemRecord:
+      type: object
+      properties:
+        id:
+          type: integer
+        prescriptionId:
+          type: integer
+        medicineId:
+          type: integer
+        medicineNameEn:
+          type: string
+        medicineNameAr:
+          type: string
+        medicinePrice:
+          type: number
+          format: float
+        medicineUnit:
+          type: string
+        quantity:
+          type: integer
+        dosageNotes:
+          type: string
+    PrescriptionRecord:
+      type: object
+      properties:
+        id:
+          type: integer
+        hash:
+          type: string
+        appointmentId:
+          type: integer
+        providerId:
+          type: integer
+        customerId:
+          type: integer
+        notes:
+          type: string
+        prescribedDate:
+          type: string
+          format: date-time
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PrescriptionItemRecord'
+    PharmacyOrderItemRecord:
+      type: object
+      properties:
+        id:
+          type: integer
+        pharmacyOrderId:
+          type: integer
+        medicineId:
+          type: integer
+        medicineNameEn:
+          type: string
+        medicineNameAr:
+          type: string
+        medicinePrice:
+          type: number
+          format: float
+        medicineUnit:
+          type: string
+        quantity:
+          type: integer
+        dosageNotes:
+          type: string
+        lineTotal:
+          type: number
+          format: float
+    PharmacyOrderRecord:
+      type: object
+      properties:
+        id:
+          type: integer
+        hash:
+          type: string
+        prescriptionId:
+          type: integer
+        customerFirstName:
+          type: string
+        customerLastName:
+          type: string
+        customerEmail:
+          type: string
+        customerPhone:
+          type: string
+        fulfillmentMethod:
+          type: string
+          enum: [home_delivery, in_clinic_pickup]
+        deliveryAddress:
+          type: string
+        branchId:
+          type: integer
+        status:
+          type: string
+          enum: [pending, processing, delivered, ready_for_pickup, cancelled]
+        subtotal:
+          type: number
+          format: float
+        total:
+          type: number
+          format: float
+        currency:
+          type: string
+        stripeSessionId:
+          type: string
+        stripePaymentIntentId:
+          type: string
+        paymentStatus:
+          type: string
+          enum: [pending, paid, refunded]
+        paymentAmount:
+          type: number
+          format: float
+        paidAt:
+          type: string
+          format: date-time
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PharmacyOrderItemRecord'
     ErrorResponse:
       type: object
       properties:

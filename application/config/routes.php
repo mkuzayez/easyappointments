@@ -151,6 +151,14 @@ route_api_resource($route, 'branches', 'api/v1/');
 
 route_api_resource($route, 'feedback', 'api/v1/');
 
+route_api_resource($route, 'medicine_categories', 'api/v1/');
+
+route_api_resource($route, 'medicines', 'api/v1/');
+
+route_api_resource($route, 'prescriptions', 'api/v1/');
+
+route_api_resource($route, 'pharmacy_orders', 'api/v1/');
+
 $route['api/v1/settings']['get'] = 'api/v1/settings_api_v1/index';
 
 $route['api/v1/settings/(:any)']['get'] = 'api/v1/settings_api_v1/show/$1';
@@ -168,6 +176,16 @@ $route['api/v1/payments/(:num)/refund']['post'] = 'api/v1/payments_api_v1/refund
 $route['api/v1/feedback/(:num)/approve']['patch'] = 'api/v1/feedback_api_v1/approve/$1';
 
 $route['api/v1/feedback/provider/(:num)/rating']['get'] = 'api/v1/feedback_api_v1/provider_rating/$1';
+
+$route['api/v1/pharmacy_orders/(:num)/status']['patch'] = 'api/v1/pharmacy_orders_api_v1/update_status/$1';
+
+// Public cart API (no auth) — verify-payment MUST be before (:any) to avoid conflicts
+$route['api/v1/pharmacy/cart/verify-payment']['post'] = 'api/v1/pharmacy_cart_api_v1/verify_payment';
+$route['api/v1/pharmacy/cart/(:any)']['get'] = 'api/v1/pharmacy_cart_api_v1/get_prescription/$1';
+$route['api/v1/pharmacy/cart/(:any)/order']['post'] = 'api/v1/pharmacy_cart_api_v1/create_order/$1';
+
+// Public server-rendered pharmacy cart page
+$route['pharmacy/cart/(:any)'] = 'pharmacy_cart/index/$1';
 
 /*
 | -------------------------------------------------------------------------

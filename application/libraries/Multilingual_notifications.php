@@ -277,6 +277,103 @@ class Multilingual_notifications
     }
 
     /**
+     * Send prescription ready email in user's preferred language.
+     *
+     * @param array $prescription Prescription data (DB format).
+     * @param array $items Prescription items (API-encoded).
+     * @param array $provider Provider data.
+     * @param array $customer Customer data.
+     * @param string $cart_url URL for the pharmacy cart page.
+     * @param string|null $language Language code ('ar' or 'en').
+     */
+    public function send_prescription_ready(
+        array $prescription,
+        array $items,
+        array $provider,
+        array $customer,
+        string $cart_url,
+        ?string $language = null,
+    ): void {
+        $language = $language ?? ($customer['preferred_language'] ?? 'en');
+
+        $data = [
+            'customer_name' => trim(($customer['first_name'] ?? '') . ' ' . ($customer['last_name'] ?? '')),
+            'provider_name' => 'Dr. ' . trim(($provider['first_name'] ?? '') . ' ' . ($provider['last_name'] ?? '')),
+            'prescription_date' => date('d M Y', strtotime($prescription['prescribed_date'] ?? 'now')),
+            'items' => $items,
+            'cart_url' => $cart_url,
+        ];
+
+        $template = 'emails/' . $language . '/prescription_ready';
+
+        if (!file_exists(VIEWPATH . $template . '.php')) {
+            $template = 'emails/en/prescription_ready';
+        }
+
+        $html = $this->CI->load->view($template, $data, true);
+
+        $subject =
+            $language === 'ar'
+                ? 'وصفتك الطبية جاهزة - مركز الخبراء الطبي'
+                : 'Your Prescription is Ready - Expert Medical Center';
+
+        $this->send_email($customer['email'], $subject, $html);
+    }
+
+    /**
+     * Send pharmacy order confirmation email in user's preferred language.
+     *
+     * @param array $order Order data (DB format).
+     * @param array $order_items Order items (API-encoded).
+     * @param string|null $language Language code ('ar' or 'en').
+     */
+    public function send_pharmacy_order_confirmation(
+        array $order,
+        array $order_items,
+        ?string $language = null,
+    ): void {
+        $language = $language ?? 'en';
+
+        $branch_name = '';
+
+        if (!empty($order['id_branches'])) {
+            try {
+                $branch = $this->CI->branches_model->find((int) $order['id_branches']);
+                $branch_name = $language === 'ar'
+                    ? ($branch['name_ar'] ?? $branch['name'] ?? '')
+                    : ($branch['name'] ?? '');
+            } catch (Throwable $e) {
+                log_message('error', 'Multilingual_notifications: Could not load branch: ' . $e->getMessage());
+            }
+        }
+
+        $data = [
+            'customer_name' => trim(($order['customer_first_name'] ?? '') . ' ' . ($order['customer_last_name'] ?? '')),
+            'order_items' => $order_items,
+            'total' => $order['total'] ?? 0,
+            'currency' => $order['currency'] ?? 'AED',
+            'fulfillment_method' => $order['fulfillment_method'] ?? '',
+            'delivery_address' => $order['delivery_address'] ?? '',
+            'branch_name' => $branch_name,
+        ];
+
+        $template = 'emails/' . $language . '/pharmacy_order_confirmation';
+
+        if (!file_exists(VIEWPATH . $template . '.php')) {
+            $template = 'emails/en/pharmacy_order_confirmation';
+        }
+
+        $html = $this->CI->load->view($template, $data, true);
+
+        $subject =
+            $language === 'ar'
+                ? 'تم تأكيد الطلب - مركز الخبراء الطبي'
+                : 'Order Confirmed - Expert Medical Center';
+
+        $this->send_email($order['customer_email'], $subject, $html);
+    }
+
+    /**
      * Build a frontend URL for a given path.
      *
      * @param string $path URL path (e.g. 'booking/payment/abc123').
