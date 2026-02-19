@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Context
 
-This is **Easy!Appointments v1.5.2** (CodeIgniter 3 / PHP 8.4) customized for **Expert Medical Center** — a UAE medical booking system with Dubai and Abu Dhabi branches. The Next.js frontend consumes the REST API.
+This is **Expert Center Appointment** (based on Easy!Appointments v1.5.2, CodeIgniter 3 / PHP 8.4) customized for **Expert Medical Center** — a UAE medical booking system with Dubai and Abu Dhabi branches. The Next.js frontend consumes the REST API.
 
 **9 Medical Specialties:** Dental, Dermatology, Gynecology, Pediatrics, Sensory Room (Autism), + 4 TBD. In the backend these are **`service_categories`** — use `GET /api/v1/service_categories` filtered by branch for the department selection screen.
 

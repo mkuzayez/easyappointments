@@ -1,6 +1,6 @@
 {
-    "name": "alextselegidis/easyappointments",
-    "description": "Open Source Web Scheduler",
+    "name": "expertmedical/expert-center-appointment",
+    "description": "Expert Medical Center Appointment System",
     "version": "1.5.2",
     "homepage": "https://easyappointments.org",
     "type": "project",

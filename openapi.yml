@@ -1,18 +1,18 @@
 openapi: 3.0.3
 info:
-  title: Easy!Appointments API
+  title: Expert Center Appointment API
   version: 1.0.0
-  description: These are the OpenAPI specs that describe the REST API of Easy!Appointments.
+  description: These are the OpenAPI specs that describe the REST API of Expert Center Appointment.
   termsOfService: https://easyappointments.org/terms-and-conditions
   contact:
-    name: Easy!Appointments
+    name: Expert Center Appointment
     url: https://easyappointments.org
     email: info@easyappointments.org
   license:
     name: GPL-3.0
     url: https://www.gnu.org/licenses/gpl-3.0.en.html
 externalDocs:
-  description: Find out more about Easy!Appointments
+  description: Find out more about Expert Center Appointment
   url: https://easyappointments.org/docs.html
 servers:
   - url: https://demo.easyappointments.org/index.php/api/v1/
